@@ -4,7 +4,7 @@
 
 #[derive(Debug)]
 struct StrSplit<'a> {
-    remainder: &'a str,
+    remainder: Option<&'a str>,
     delimiter: &'a str,
 }
 
@@ -15,7 +15,7 @@ impl<'a> StrSplit<'a> {
     // If this is a long function, we need to scroll to figure what type Self refers to.
     pub fn new (haystack: &'a str, delimiter: &'a str) -> Self {
         Self {
-            remainder: haystack,
+            remainder: Some(haystack),
             delimiter
         }
     }
@@ -27,21 +27,22 @@ impl<'a> Iterator for StrSplit<'a> {
     // It is obvious to us that this has remainder's lifetime but Rustc needs to know.
     type Item = &'a str;
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(next_delim) = self.remainder.find(self.delimiter) {
-            let until_delimiter = &self.remainder[..next_delim];
-            self.remainder = &self.remainder[(next_delim + self.delimiter.len())..];
-            Some(until_delimiter)
-        } else if self.remainder.is_empty() {
-            None
+        // Some(ref mut r) - Take reference of the remainder when it matches Some()
+        // Some(r) - Own remainder through copy.
+        // Some(&mut r) - does matching when remainder is of type &mut T, which its not.
+        if let Some(ref mut remainder) = self.remainder {
+            if let Some(next_delim) = remainder.find(self.delimiter) {
+                let until_delimiter = &remainder[..next_delim];
+                *remainder = &remainder[(next_delim + self.delimiter.len())..];
+                Some(until_delimiter)
+            } else {
+                // take() - if option = None { return; } else 
+                // {set Option to None;
+                // return Some;}
+                self.remainder.take()
+            }
         } else {
-            // Why bother with emptying the remainder in the last step?
-            // Easy to return Some(Self.remainder)
-            let rest = self.remainder;
-            // Empty string has static lifetime.
-            // But we said we will return something with lifetime 'a.
-            // Reason this is ok is, so long as lifetime is >= its fine.
-            self.remainder = "";
-            Some(rest)
+            None
         }
     }
 }
