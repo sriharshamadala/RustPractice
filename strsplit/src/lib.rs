@@ -21,6 +21,12 @@ impl<'a> StrSplit<'a> {
     }
 }
 
+/*
+fn until_char(s: &str, c: char) -> &str {
+    StrSplit::new(s, &format!("{}", c)).next().expect("StrSplit always returns something")
+}
+*/
+
 // This allows us to do, "for part in StrSplit {}"
 impl<'a> Iterator for StrSplit<'a> {
     // We return a str, but what is the expected lifetime of this?
@@ -68,3 +74,13 @@ fn tail() {
     assert_eq!(letters, vec!["a", "b", "c", "d", ""]);
 }
 
+#[test]
+fn empty_haystack() {
+    let haystack = "";
+    if let Some(result) = StrSplit::new(haystack, " ").next() {
+        assert_eq!(result, "");
+    } else {
+        // Not supposed to happen.
+        assert!(false);
+    }
+}
