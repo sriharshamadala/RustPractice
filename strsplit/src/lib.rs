@@ -3,17 +3,17 @@
 ///
 
 #[derive(Debug)]
-struct StrSplit<'a> {
-    remainder: Option<&'a str>,
-    delimiter: &'a str,
+struct StrSplit<'haystack, 'delimiter> {
+    remainder: Option<&'haystack str>,
+    delimiter: &'delimiter str,
 }
 
 // '_ is anonymous lifetime; We are asking the compiler to guess the lifetime
 // This only works if there is one possible value.
-impl<'a> StrSplit<'a> {
+impl<'haystack, 'delimiter> StrSplit<'haystack, 'delimiter> {
     // We could return StrSplit but edit in more places should the name change.
     // If this is a long function, we need to scroll to figure what type Self refers to.
-    pub fn new (haystack: &'a str, delimiter: &'a str) -> Self {
+    pub fn new (haystack: &'haystack str, delimiter: &'delimiter str) -> Self {
         Self {
             remainder: Some(haystack),
             delimiter
@@ -21,20 +21,17 @@ impl<'a> StrSplit<'a> {
     }
 }
 
-/* Before introducing multiple lifetimes
- * The reason this fails is - we create a string whose lifetime is local to the curr func.
- * By StrSplit::new def, s and c and StrSplit obj should have the same lifetimes
- * Hence rustc sets StrSplit obj lifetime to curr func and hence the return fails.
 fn until_char(s: &str, c: char) -> &str {
     StrSplit::new(s, &format!("{}", c)).next().expect("StrSplit always returns something")
 }
-*/
 
 // This allows us to do, "for part in StrSplit {}"
-impl<'a> Iterator for StrSplit<'a> {
+impl<'haystack, 'delimiter> Iterator for StrSplit<'haystack, 'delimiter> {
     // We return a str, but what is the expected lifetime of this?
     // It is obvious to us that this has remainder's lifetime but Rustc needs to know.
-    type Item = &'a str;
+    // We are saying here that the lifetime of the return value be tied to haystack
+    // and not the delimiter.
+    type Item = &'haystack str;
     fn next(&mut self) -> Option<Self::Item> {
         // Some(ref mut r) - Take reference of the remainder when it matches Some()
         // Some(r) - Own remainder through copy.
@@ -86,4 +83,10 @@ fn empty_haystack() {
         // Not supposed to happen.
         assert!(false);
     }
+}
+
+#[test]
+fn until_char_test() {
+    let haystack = "Hello World!";
+    assert_eq!("Hell", until_char(haystack, 'o'))
 }
