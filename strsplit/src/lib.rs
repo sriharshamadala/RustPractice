@@ -21,7 +21,10 @@ impl<'a> StrSplit<'a> {
     }
 }
 
-/*
+/* Before introducing multiple lifetimes
+ * The reason this fails is - we create a string whose lifetime is local to the curr func.
+ * By StrSplit::new def, s and c and StrSplit obj should have the same lifetimes
+ * Hence rustc sets StrSplit obj lifetime to curr func and hence the return fails.
 fn until_char(s: &str, c: char) -> &str {
     StrSplit::new(s, &format!("{}", c)).next().expect("StrSplit always returns something")
 }
