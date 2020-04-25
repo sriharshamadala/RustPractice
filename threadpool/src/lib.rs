@@ -3,6 +3,7 @@
 
 use std::sync::mpsc::channel;
 use std::sync::Mutex;
+use std::sync::Arc;
 
 pub struct ThreadPool {
     _handles: Vec<std::thread::JoinHandle<()>>,
@@ -12,14 +13,17 @@ impl ThreadPool {
     pub fn new(num_threads: u8) -> Self {
         // Using Dyn dispatch;
         let (sender, receiver) = channel::<Box<dyn Fn()>>();
-        let receiver = Mutex::new(receiver);
+        // Arc allows multiple owners. Mutex allows exclusive access to receiver.
+        let receiver = Arc::new(Mutex::new(receiver));
         
         // Why is the closure move?
-        let _handles = (0..num_threads).map(|_| { std::thread::spawn(move || 
+        let _handles = (0..num_threads).map(|_| { 
+            // Increments ref counter for receiver.
+            let clone = receiver.clone();
+            std::thread::spawn(move || 
             loop {
-                // Blocking call. recv() returns Result<>. Ideally we want to handle Err<>;
-                // Mutex also shouldn't be unwrapped; If any mutex holder crashes, everthing crashes.
-                let work = receiver.lock().unwrap().recv().unwrap();
+                // We copy the clone to each thread.
+                let work = clone.lock().unwrap().recv().unwrap();
                 work();
             })
          })
