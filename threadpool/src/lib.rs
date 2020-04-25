@@ -24,10 +24,11 @@ impl ThreadPool {
             std::thread::spawn(move || 
             loop {
                 // We copy the clone to each thread.
-                let work = clone.lock().unwrap().recv().unwrap();
-                println!("Start");
-                work();
-                println!("Finish");
+                let work = clone.lock().unwrap().recv();
+                match work {
+                    Ok(work) => work(),
+                    Err(_) => break,
+                }
             })
          })
         .collect();
