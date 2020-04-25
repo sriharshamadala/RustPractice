@@ -1,18 +1,19 @@
 /// Create a simple library for Thread pool
 /// Rust uses OS threads for zero-cost abstraction
 
-use std::sync::mpsc::channel;
+use std::sync::mpsc::{channel, Sender};
 use std::sync::Mutex;
 use std::sync::Arc;
 
 pub struct ThreadPool {
     _handles: Vec<std::thread::JoinHandle<()>>,
+    sender: Sender<Box<dyn Fn()+ Send>>,
 }
 
 impl ThreadPool {
     pub fn new(num_threads: u8) -> Self {
         // Using Dyn dispatch;
-        let (sender, receiver) = channel::<Box<dyn Fn()>>();
+        let (sender, receiver) = channel::<Box<dyn Fn()+ Send>>();
         // Arc allows multiple owners. Mutex allows exclusive access to receiver.
         let receiver = Arc::new(Mutex::new(receiver));
         
@@ -29,11 +30,12 @@ impl ThreadPool {
          })
         .collect();
         Self {
-            _handles
+            _handles, sender
         }
     }
     
-    pub fn execute<T: Fn()>(&self, work: T) {
+    pub fn execute<T: Fn() + Send>(&self, work: T) {
+        self.sender.send(Box::new(work));
     }
 }
 
