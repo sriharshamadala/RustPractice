@@ -25,7 +25,9 @@ impl ThreadPool {
             loop {
                 // We copy the clone to each thread.
                 let work = clone.lock().unwrap().recv().unwrap();
+                println!("Start");
                 work();
+                println!("Finish");
             })
          })
         .collect();
@@ -34,8 +36,8 @@ impl ThreadPool {
         }
     }
     
-    pub fn execute<T: Fn() + Send>(&self, work: T) {
-        self.sender.send(Box::new(work));
+    pub fn execute<T: Fn() + Send + 'static>(&self, work: T) {
+        self.sender.send(Box::new(work)).unwrap();
     }
 }
 
@@ -43,8 +45,11 @@ impl ThreadPool {
 #[test]
 fn it_works() {
     let pool = ThreadPool::new(10);
-    pool.execute(|| println!("Hello from thread!"));
-    pool.execute(|| println!("Hello from thread!"));
+    let foo = || {
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    };
+    pool.execute(foo);
+    pool.execute(foo);
 }
 
 
