@@ -55,16 +55,24 @@ fn it_works() {
 
 #[test]
 fn inc_num_test() {
-    let mut n = 42;
+    // CPU-feature that allows atomic access of n
+    use std::sync::atomic::{AtomicU32, Ordering};
+    let n = AtomicU32::new(42);
     let nref = Arc::new(n);
+    // To be used later for comparision
+    let nref_clone = nref.clone();
 
     let pool = ThreadPool::new(10);
 
-    // Fail to derefMut in arc. It doesn't allow exlusive access like &mut does.
-    let foo = || {
-        **nref = **nref + 1;
+    // move because outside this func, nref gets dropped.
+    let foo = move || {
+        nref.fetch_add(1, Ordering::SeqCst);
     };
+    pool.execute(foo.clone());
     pool.execute(foo);
-    pool.execute(foo);
+    // Without the sleep, we can't guarantee the test pass.
+    // We need to wait for thread pools to finish the work.
+    std::thread::sleep(std::time::Duration::from_secs(2));
+    assert_eq!(nref_clone.load(Ordering::SeqCst), 44);
 }
 
