@@ -6,40 +6,33 @@ where
     T: Eq + std::cmp::PartialOrd + Copy,
 {
     let input_len = input.len();
-    quick_sort_recursive(&mut input, 0, input_len - 1);
+    quick_sort_recursive(&mut input);
     input
 }
 
-pub fn quick_sort_recursive<T: Eq + std::cmp::PartialOrd + Copy>(
-    input: &mut Vec<T>,
-    left_index: usize,
-    right_index: usize,
-) where
-    T: Eq + std::cmp::PartialOrd + Copy,
-{
-    let partition_index = partition(input, left_index, right_index);
-
-    if (partition_index > 1) && (partition_index - 1 > left_index) {
-        quick_sort_recursive(input, left_index, partition_index - 1);
-    }
-
-    if right_index > partition_index + 1 {
-        quick_sort_recursive(input, partition_index + 1, right_index);
-    }
-}
-
-pub fn partition<T: Eq + std::cmp::PartialOrd + Copy>(
-    input: &mut Vec<T>,
-    left_index: usize,
-    right_index: usize,
-) -> usize
+pub fn quick_sort_recursive<T: Eq + std::cmp::PartialOrd + Copy>(input: &mut [T])
 where
     T: Eq + std::cmp::PartialOrd + Copy,
 {
-    let pivot_value = input[right_index];
-    let mut temp_pivot_index = left_index;
+    let slice_len = input.len();
 
-    for index in left_index..right_index {
+    if slice_len > 0 {
+        let partition_index = partition(input);
+        quick_sort_recursive(&mut input[0..partition_index]);
+        quick_sort_recursive(&mut input[partition_index + 1..slice_len]);
+    }
+}
+
+pub fn partition<T: Eq + std::cmp::PartialOrd + Copy>(input: &mut [T]) -> usize
+where
+    T: Eq + std::cmp::PartialOrd + Copy,
+{
+    // We already checked slice is not empty
+    let pivot_value = input.last().copied().unwrap();
+    let mut temp_pivot_index = 0;
+    let slice_len = input.len();
+
+    for index in 0..slice_len {
         if input[index] < pivot_value {
             input.swap(temp_pivot_index, index);
             temp_pivot_index += 1;
@@ -48,7 +41,7 @@ where
 
     // Swap the pivot into right position
     if input[temp_pivot_index] > pivot_value {
-        input.swap(temp_pivot_index, right_index);
+        input.swap(temp_pivot_index, slice_len - 1);
     }
 
     temp_pivot_index
