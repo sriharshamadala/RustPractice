@@ -1,16 +1,16 @@
 # Summary 
-This repo is a collection of libraries written to improve conceptual understanding of Rust
+This repo contains sample projects and implementations of algorithms and datastructures, written to improve conceptual understanding of Rust
 
-# Organization
+# Code Organization
 
-## Threadpool
+## threadpool
 Threadpool design pattern implementation to understand `std::sync::Arc` and related concepts
 
-## Strsplit
+## strsplit
 Implement C `strtok()` to understand lifetimes
 
 ## my_algos
-### Sorting
+### sorting
 Implemented QuickSort
 
 ### Disjoint Set aka Union-Find
@@ -21,3 +21,9 @@ Simple implementation of a singly linked list
 #### Sources
 * [Crust of Rust: Std::Collections](https://www.youtube.com/watch?v=EF3Z4jdD1EQ)
 * [Implementing linked list in Rust](https://applied-math-coding.medium.com/implementing-a-linked-list-in-rust-b84b9fd252e8)
+
+### trie
+Implemented Trie datastructure
+
+### union_find
+Implemented Union-Find aka Disjoint Set datastructure complete with path compression and union by rank optimizations
