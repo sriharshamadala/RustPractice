@@ -13,6 +13,9 @@ Implement C `strtok()` to understand lifetimes
 ### Sorting
 Implemented QuickSort
 
+### Disjoint Set aka Union-Find
+[Source](https://leetcode.com/explore/learn/card/graph/618/disjoint-set/3843/)
+
 ### Linked List
 Simple implementation of a singly linked list
 #### Sources

@@ -1,4 +1,3 @@
 Cargo.lock
 *.swp
-strsplit/target/
-threadpool/target/
+**/target
