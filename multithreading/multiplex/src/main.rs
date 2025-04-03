@@ -27,6 +27,7 @@ fn main() {
             // Check the current occupancy of the club
             let (lock, cvar) = &*club_full_sig_pair_clone;
             let mut club_occupancy = lock.lock().unwrap();
+
             // Wait if the club is full
             while *club_occupancy >= CAPACITY {
                 club_occupancy = cvar.wait(club_occupancy).unwrap();
@@ -49,6 +50,7 @@ fn main() {
                 println!("Occupancy = {}", *club_occupancy);
             }
 
+            // Notify a waiting thread that they can enter
             cvar.notify_one();
         }));
     }
