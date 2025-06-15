@@ -27,3 +27,10 @@ Implemented Trie datastructure
 
 ### union_find
 Implemented Union-Find aka Disjoint Set datastructure complete with path compression and union by rank optimizations
+
+## rusty_grpc
+Built a gRPC server and client using Tonic
+
+#### Sources
+* [Tutorial](https://github.com/ThorstenHans/rusty-grpc)
+* [Protobuf documentation](https://protobuf.dev/programming-guides/proto3/)
